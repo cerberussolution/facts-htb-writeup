@@ -1,6 +1,6 @@
 # HTB Machine: Facts — Full Writeup 🚩
 
-![Difficulty](https://img.shields.io/badge/Difficulty-Easy-orange)
+![Difficulty](https://img.shields.io/badge/Difficulty-Easy-green)
 ![Category](https://img.shields.io/badge/Category-Web%20%7C%20PrivEsc-blue)
 ![OS](https://img.shields.io/badge/OS-Linux-lightgrey)
 
